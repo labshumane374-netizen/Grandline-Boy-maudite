@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Grandline Boy - Dimension Perdue</title>
+    <style>
+        :root {
+            --gb-green-dark: #0f380f;
+            --gb-green-mid: #306230;
+            --gb-green-light: #8bac0f;
+            --gb-green-pale: #9bbc0f;
+            --gb-body: #c4c4c4;
+            --gb-accent: #8b104a;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .gameboy {
+            background-color: var(--gb-body);
+            width: 340px;
+            height: 560px;
+            border-radius: 12px 12px 80px 12px;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2), inset 5px 5px 10px rgba(255,255,255,0.5), 15px 15px 30px rgba(0,0,0,0.5);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 25px;
+            user-select: none;
+            transform: scale(1.35);
+        }
+
+        .gameboy-logo {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #8b104a 0%, #2b3595 100%);
+            border-radius: 20px;
+            padding: 8px 15px;
+            color: #fff;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .screen-bezel {
+            background-color: #707070;
+            width: 280px;
+            height: 240px;
+            border-radius: 12px 12px 50px 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+            border: 2px solid #555;
+        }
+
+        .screen-bezel::before {
+            content: "";
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: linear-gradient(90deg, #8b104a 0%, #2b3595 100%);
+        }
+
+        .screen-label {
+            position: absolute;
+            top: 22px;
+            color: #eee;
+            font-size: 8px;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        #game-screen {
+            background-color: var(--gb-green-pale);
+            width: 180px;
+            height: 180px;
+            border: 6px solid #222;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--gb-green-pale);
+            display: none;
+            flex-direction: column;
+            padding: 8px;
+            box-sizing: border-box;
+            color: var(--gb-green-dark);
+            font-size: 7px;
+            overflow-y: auto;
+            line-height: 1.2;
+        }
+
+        .screen.active {
+            display: flex;
+        }
+
+        h1 {
+            font-size: 10px;
+            margin: 0 0 4px 0;
+            text-align: center;
+            border-bottom: 1px solid var(--gb-green-dark);
+            padding-bottom: 2px;
+        }
+
+        h2 {
+            font-size: 8px;
+            margin: 3px 0;
+        }
+
+        .input-box {
+            background: rgba(15, 56, 15, 0.1);
+            border: 1px solid var(--gb-green-dark);
+            padding: 2px;
+            margin: 1px 0;
+            font-size: 7px;
+            min-height: 8px;
+            text-align: center;
+        }
+
+        .input-box.active {
+            background: var(--gb-green-mid);
+            color: var(--gb-green-pale);
+        }
+
+        .btn {
+            background: var(--gb-green-mid);
+            color: var(--gb-green-pale);
+            border: 1px solid var(--gb-green-dark);
+            padding: 2px 4px;
+            margin: 2px 0;
+            cursor: pointer;
+            font-size: 7px;
+            text-align: center;
+        }
+
+        .story-text {
+            margin: 2px 0;
+            font-size: 7px;
+            text-align: justify;
+            line-height: 1.3;
+        }
+
+        .choice {
+            background: rgba(15, 56, 15, 0.1);
+            border: 1px solid var(--gb-green-mid);
+            padding: 3px;
+            margin: 2px 0;
+            cursor: pointer;
+            font-size: 7px;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .choice.selected {
+            background: var(--gb-green-mid);
+            color: var(--gb-green-pale);
+            border-color: var(--gb-green-dark);
+        }
+
+        .character-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .character-item {
+            background: rgba(15, 56, 15, 0.1);
+            border: 1px solid var(--gb-green-mid);
+            padding: 2px;
+            font-size: 6px;
+            text-align: center;
+        }
+
+        .character-item.dead {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .combat-bar {
+            background: var(--gb-green-dark);
+            height: 4px;
+            margin: 2px 0;
+            border: 1px solid var(--gb-green-mid);
+            width: 100%;
+        }
+
+        .combat-bar-fill {
+            background: var(--gb-green-pale);
+            height: 100%;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .combat-container {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            width: 100%;
+        }
+
+        .combat-actions {
+            margin-top: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            width: 100%;
+        }
+
+        .combat-actions .choice {
+            font-size: 6px;
+            padding: 3px;
+        }
+
+        .controls {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .dpad {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin-right: auto;
+            margin-left: 10px;
+        }
+
+        .dpad-cross {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 90px;
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .dpad-cross.horizontal {
+            width: 90px;
+            height: 30px;
+        }
+
+        .dpad-btn {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 5;
+        }
+
+        .btn-up { top: 5px; left: 35px; }
+        .btn-down { bottom: 5px; left: 35px; }
+        .btn-left { top: 35px; left: 5px; }
+        .btn-right { top: 35px; right: 5px; }
+
+        .action-btns {
+            position: absolute;
+            right: 20px;
+            bottom: 140px;
+            transform: rotate(-25deg);
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn-circle {
+            width: 50px;
+            height: 50px;
+            background-color: var(--gb-accent);
+            border-radius: 50%;
+            box-shadow: 0 4px 0 #5a0a30;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .action-btn-circle:active {
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        .start-select {
+            display: flex;
+            gap: 25px;
+            margin-top: 60px;
+        }
+
+        .pill-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pill-btn {
+            width: 45px;
+            height: 12px;
+            background-color: #999;
+            border-radius: 10px;
+            transform: rotate(-25deg);
+            box-shadow: 0 2px 0 #777;
+            cursor: pointer;
+        }
+
+        .pill-label {
+            font-size: 8px;
+            font-weight: bold;
+            color: #777;
+            text-transform: uppercase;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .blink {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes bootFadeIn {
+            0% { opacity: 0; }
+            60% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .boot-logo {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: bootFadeIn 0.8s ease-in 1s forwards;
+        }
+
+        .boot-subtitle {
+            font-size: 7px;
+            opacity: 0;
+            animation: bootFadeIn 0.6s ease-in 2s forwards, blink 1.5s infinite 2.5s;
+        }
+
+        .coords-box {
+            border: 1px dashed var(--gb-green-dark);
+            padding: 4px;
+            margin-top: 4px;
+            background: rgba(0,0,0,0.05);
+            font-family: monospace;
+            font-size: 6px;
+            line-height: 1.1;
+            text-align: center;
+        }
+
+        .game-over {
+            color: #ff0000;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 40px;
+            animation: blink 1.5s infinite;
+        }
+
+        .disintegrate {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pixel-glitch {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: #000;
+            opacity: 0;
+            animation: glitchPixel 0.1s forwards;
+        }
+
+        @keyframes glitchPixel {
+            0% { opacity: 0; }
+            50% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        .final-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ffffff;
+            font-size: 8px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeInMessage 2s ease-in 3s forwards;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        @keyframes fadeInMessage {
+            0% { opacity: 0; }
+            100% { opacity: 1; }
+        }
+
+        .animation-container {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .character-sprite {
+            width: 20px;
+            height: 20px;
+            background-color: var(--gb-green-dark);
+            position: absolute;
+            border-radius: 2px;
+        }
+
+        .fire-animation {
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ff8c00 0%, #ff4500 70%, transparent 100%);
+            border-radius: 50% 50% 45% 45%;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%) scale(0);
+            opacity: 0;
+            animation: fireGlow 1.5s ease-in-out forwards;
+        }
+
+        .fire-animation::before {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, #ffff00 0%, #ff8c00 60%, transparent 100%);
+            border-radius: 50%;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: flicker 0.3s infinite alternate;
+        }
+
+        @keyframes fireGlow {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0) translateY(10px);
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) translateY(0);
+            }
+        }
+
+        @keyframes flicker {
+            0% { opacity: 0.8; transform: translateX(-50%) scale(0.95); }
+            100% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+        }
+
+        .hide-animation {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(15, 56, 15, 0.3);
+            border: 2px dashed var(--gb-green-dark);
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            opacity: 0;
+            animation: hideEffect 1.2s ease-out forwards;
+            border-radius: 4px;
+        }
+
+        @keyframes hideEffect {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 0.7;
+                transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+            }
+            100% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1) rotate(360deg);
+            }
+        }
+
+        .character-walk {
+            animation: walkAnimation 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes walkAnimation {
+            0% { left: 0; }
+            100% { left: calc(100% - 20px); }
+        }
+
+        .character-run {
+            animation: runAnimation 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        @keyframes runAnimation {
+            0% { left: 0; transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { left: calc(100% - 20px); transform: translateY(0); }
+        }
+
+        .fade-item {
+            animation: fadeOut 1s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.5); }
+        }
+
+        .split-left {
+            animation: splitLeft 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        .split-right {
+            animation: splitRight 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes splitLeft {
+            0% { left: 50%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 20%; opacity: 1; }
+        }
+
+        @keyframes splitRight {
+            0% { left: 50%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 80%; opacity: 1; }
+        }
+
+        .group-pulse {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .magnifier {
+            animation: scan 2s ease-in-out infinite;
+        }
+
+        @keyframes scan {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+            50% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+        }
+
+        .tent-animation {
+            width: 30px;
+            height: 20px;
+            background-color: #8B4513;
+            position: absolute;
+            left: 50%;
+            bottom: 10px;
+            transform: translateX(-50%) scale(0);
+            opacity: 0;
+            border-radius: 50% 50% 0 0;
+            animation: tentAppear 1.5s ease-in-out forwards;
+        }
+
+        @keyframes tentAppear {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) scale(0) translateY(10px);
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(-50%) scale(1) translateY(0);
+            }
+        }
+
+        .circle-animation {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #9bbc0f;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            opacity: 0;
+            animation: circleGlow 1.5s ease-in-out forwards;
+        }
+
+        @keyframes circleGlow {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 0.8;
+            }
+            100% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="gameboy">
+    <div class="gameboy-logo">GRANDLINE BOY</div>
+
+    <div class="screen-bezel">
+        <span class="screen-label">DOT MATRIX WITH STEREO SOUND</span>
+        <div id="game-screen">
+            <!-- ÉCRAN BOOT -->
+            <div id="screen-boot" class="screen active" style="justify-content: center; align-items: center;">
+                <div class="boot-logo">GRANDLINE<br>BOY</div>
+                <div class="boot-subtitle">PRESS START</div>
+            </div>
+
+            <!-- ÉCRAN MENU -->
+            <div id="screen-menu" class="screen">
+                <h1>SELECT GAME</h1>
+                <div style="margin-top: 8px;">
+                    <div class="btn" style="background: var(--gb-green-dark);">▶ DIMENSION PERDUE</div>
+                    <div style="margin-top: 4px; font-size: 6px; line-height: 1.1;">
+                        <p><b>⚠️ IMPORTANT :</b></p>
+                        <p>Entrez les VRAIS prénoms</p>
+                        <p>des personnes autour de vous.</p>
+                        <p>Appuyez sur [A]</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉCRAN NOMS -->
+            <div id="screen-names" class="screen">
+                <h1>NOMS DES JOUEURS</h1>
+                <p style="margin: 2px 0; font-size: 6px;">Flèches: lettre | A: valider | START: lancer</p>
+                <div style="margin-top: 4px;">
+                    <p style="margin: 1px 0; font-weight: bold; font-size: 6px;">Vous:</p>
+                    <div id="name1" class="input-box">_</div>
+                    <p style="margin: 1px 0; font-size: 6px;">Coéquipier 1:</p>
+                    <div id="name2" class="input-box">_</div>
+                    <p style="margin: 1px 0; font-size: 6px;">Coéquipier 2:</p>
+                    <div id="name3" class="input-box">_</div>
+                    <p style="margin: 1px 0; font-size: 6px;">Coéquipier 3:</p>
+                    <div id="name4" class="input-box">_</div>
+                </div>
+                <div style="margin-top: 4px; font-size: 6px; text-align: center;" class="blink">
+                    Appuyez sur START
+                </div>
+            </div>
+
+            <!-- ÉCRAN HISTOIRE -->
+            <div id="screen-story" class="screen">
+                <h1 id="story-title">DIMENSION PERDUE</h1>
+                <div id="story-content" class="story-text"></div>
+                <div class="animation-container" id="animation-container"></div>
+                <div id="choices-container"></div>
+            </div>
+
+            <!-- ÉCRAN SACRIFICE -->
+            <div id="screen-sacrifice" class="screen">
+                <h1>DÉCISION CRUCIALE</h1>
+                <p class="story-text" style="font-size: 7px;">
+                    Les cercles lumineux se referment. Pour retourner dans votre monde, il faut abandonner quelqu'un ici.
+                    {1} propose de rester, mais {2} insiste pour que ce soit lui.
+                    Qui allez-vous laisser derrière vous ?
+                </p>
+                <div class="animation-container" id="animation-container-sacrifice"></div>
+                <p style="margin: 3px 0; font-weight: bold; font-size: 6px;">Qui abandonnez-vous ?</p>
+                <div id="sacrifice-list" class="character-list"></div>
+            </div>
+
+            <!-- ÉCRAN COMBAT -->
+            <div id="screen-combat" class="screen">
+                <h1>ÉPREUVE DIMENSIONNELLE</h1>
+                <div class="combat-container">
+                    <p style="margin: 2px 0; font-size: 6px; font-weight: bold;" id="player-name"></p>
+                    <div class="combat-bar"><div class="combat-bar-fill" id="player-health" style="width: 100%;"></div></div>
+                    <p style="margin: 2px 0; font-size: 6px; font-weight: bold;">GARDIEN DIMENSIONNEL</p>
+                    <div class="combat-bar"><div class="combat-bar-fill" id="monster-health" style="width: 100%;"></div></div>
+                    <div class="combat-actions">
+                        <div class="choice" onclick="attack()">⚡ RÉSISTER</div>
+                        <div class="choice" onclick="defend()">🛡️ SE PROTÉGER</div>
+                        <div class="choice" onclick="special()">🌀 TRANSCENDER</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ÉCRAN FIN -->
+            <div id="screen-end" class="screen">
+                <h1>RETOUR RÉUSSI</h1>
+                <p id="end-text" style="margin: 4px 0; font-size: 6px;"></p>
+                <div class="coords-box" id="coords-box">
+                    <div id="coord-x"><span class="letter">x</span> <span class="letter">=</span> <span class="letter">-</span><span class="letter">2</span><span class="letter">8</span><span class="letter">4</span><span class="letter">7</span><span class="letter">.</span><span class="letter">9</span><span class="letter">2</span></div>
+                    <div id="coord-y"><span class="letter">y</span> <span class="letter">=</span> <span class="letter">1</span><span class="letter">5</span><span class="letter">6</span><span class="letter">3</span><span class="letter">.</span><span class="letter">4</span><span class="letter">4</span></div>
+                    <div id="coord-z"><span class="letter">z</span> <span class="letter">=</span> <span class="letter">8</span><span class="letter">9</span><span class="letter">2</span><span class="letter">.</span><span class="letter">1</span><span class="letter">7</span></div>
+                    <div id="coord-a"><span class="letter">a</span> <span class="letter">=</span> <span class="letter">2</span><span class="letter">6</span><span class="letter">7</span><span class="letter">.</span><span class="letter">8</span><span class="letter">3</span></div>
+                </div>
+                <p style="margin-top: 3px; font-size: 6px;">Les coordonnées de la faille sont dévoilées...</p>
+            </div>
+
+            <!-- ÉCRAN GAME OVER -->
+            <div id="screen-gameover" class="screen" style="justify-content: center; align-items: center; background: #000;">
+                <div class="game-over">GAME OVER</div>
+            </div>
+
+            <!-- ÉCRAN DISINTEGRATE -->
+            <div id="screen-disintegrate" class="screen disintegrate" style="justify-content: center; align-items: center; background-color: var(--gb-green-pale);">
+                <div class="final-message">Et si ce n'était pas qu'un jeu ?....</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <div class="dpad">
+            <div class="dpad-cross"></div>
+            <div class="dpad-cross horizontal"></div>
+            <button class="dpad-btn btn-up" id="ctrl-up"></button>
+            <button class="dpad-btn btn-down" id="ctrl-down"></button>
+            <button class="dpad-btn btn-left" id="ctrl-left"></button>
+            <button class="dpad-btn btn-right" id="ctrl-right"></button>
+        </div>
+        <div class="action-btns">
+            <button class="action-btn-circle" id="ctrl-b">B</button>
+            <button class="action-btn-circle" id="ctrl-a">A</button>
+        </div>
+        <div class="start-select">
+            <div class="pill-container">
+                <div class="pill-btn" id="btn-select"></div>
+                <span class="pill-label">Select</span>
+            </div>
+            <div class="pill-container">
+                <div class="pill-btn" id="btn-start"></div>
+                <span class="pill-label">Start</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ ';
+    let currentScreen = 'boot';
+    let nameInputIndex = 0;
+    let nameInputs = ['', '', '', ''];
+    let currentLetterIndex = [0, 0, 0, 0];
+    let characters = [];
+    let storyPhase = 0;
+    let selectedChoice = 0;
+    let hidingSpot = null;
+    let sacrificedPerson = null;
+    let playerHealth = 100;
+    let monsterHealth = 150;
+    let storyChoices = [];
+
+    const storyPhases = [
+        {
+            title: "ARRIVÉE - 00:00",
+            text: "Vous vous réveillez dans un désert inconnu. Une voix parle dans le vent. Dû à votre avarice, vous risquez la vie de tout le monde, des cercles lumineux flottent au loin. {0} remarque une tente abandonnée.",
+            choices: [
+                { text: "Explorer la tente", animation: "tent" },
+                { text: "Suivre les cercles lumineux", animation: "circle" },
+                { text: "On cherches par nous même", animation: "stop" }
+            ]
+        },
+        {
+            title: "DÉCOUVERTE - 01:30",
+            text: "À l'intérieur de la tente, {1} trouve une hachette en pierre. {2} suggère de chercher d'autres indices. {3} veut partir immédiatement.",
+            choices: [
+                { text: "Chercher d'autres indices", animation: "inspect" },
+                { text: "Suivre les cercles lumineux", animation: "circle" },
+                { text: "Établir un camp", animation: "camp" }
+            ]
+        },
+        {
+            title: "CERCLES LUMINEUX - 03:00",
+            text: "Les cercles lumineux pulsent. {0} sent une énergie étrange. Soudain, une voix résonne : 'Un seul peut repartir...'",
+            choices: [
+                { text: "Approcher des cercles", animation: "circle" },
+                { text: "Reculer vers la tente", animation: "tent" },
+                { text: "Se disperser", animation: "split" }
+            ]
+        },
+        {
+            title: "CHOIX CRUCIAL - 04:45",
+            text: "Les cercles se referment. {1} propose de rester pour permettre aux autres de partir. {2} insiste pour que ce soit lui. {3} panique.",
+            choices: [
+                { text: "Rester groupés", animation: "group" },
+                { text: "Se sacrifier", animation: "hide" },
+                { text: "Tenter une transcendance", animation: "magnifier" }
+            ]
+        },
+        {
+            title: "TRANSCENDANCE - 05:30",
+            text: "Le choix est vite fait dites donc. Le gardien dimensionnel apparaît. Il faut le vaincre pour survivre.",
+            choices: [
+                { text: "Affronter le gardien", animation: "fire" },
+                { text: "Se cacher", animation: "hide" },
+                { text: "Fuir vers les cercles", animation: "run" }
+            ]
+        }
+    ];
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`screen-${screenId}`).classList.add('active');
+        currentScreen = screenId;
+    }
+
+    function updateNameDisplay() {
+        for (let i = 0; i < 4; i++) {
+            const display = document.getElementById(`name${i + 1}`);
+            const currentLetter = alphabet[currentLetterIndex[i]];
+            display.textContent = nameInputs[i] + currentLetter;
+            display.classList.toggle('active', i === nameInputIndex);
+        }
+    }
+
+    function addLetterToName() {
+        if (nameInputs[nameInputIndex].length < 8) {
+            nameInputs[nameInputIndex] += alphabet[currentLetterIndex[nameInputIndex]];
+            currentLetterIndex[nameInputIndex] = 0;
+            updateNameDisplay();
+        }
+    }
+
+    function startGame() {
+        characters = nameInputs.map((name, i) => ({
+            name: name.trim() || `Joueur${i + 1}`,
+            alive: true,
+            isPlayer: i === 0
+        }));
+        storyChoices = [];
+        storyPhase = 0;
+        selectedChoice = 0;
+        showStory();
+    }
+
+    function showStory() {
+        showScreen('story');
+        const story = storyPhases[storyPhase];
+
+        document.getElementById('story-title').textContent = story.title;
+
+        let text = story.text;
+        characters.forEach((char, i) => {
+            text = text.replace(`{${i}}`, char.name);
+        });
+
+        document.getElementById('story-content').innerHTML = `<p style="margin-bottom: 4px; font-size: 7px;">${text}</p>`;
+
+        const choicesDiv = document.getElementById('choices-container');
+        choicesDiv.innerHTML = '';
+        story.choices.forEach((choice, i) => {
+            const div = document.createElement('div');
+            div.className = 'choice';
+            div.textContent = `${i + 1}. ${choice.text}`;
+            div.onclick = () => {
+                selectChoice(i);
+            };
+            if (i === selectedChoice) div.classList.add('selected');
+            choicesDiv.appendChild(div);
+        });
+    }
+
+    function playAnimation(animationType) {
+        const container = document.getElementById('animation-container');
+        container.innerHTML = '';
+
+        switch (animationType) {
+            case 'walk':
+                const character = document.createElement('div');
+                character.className = 'character-sprite character-walk';
+                character.style.left = '0';
+                container.appendChild(character);
+                break;
+            case 'fire':
+                const fire = document.createElement('div');
+                fire.className = 'fire-animation';
+                container.appendChild(fire);
+                break;
+            case 'hide':
+                const hide = document.createElement('div');
+                hide.className = 'hide-animation';
+                container.appendChild(hide);
+                break;
+            case 'stop':
+                const stopCharacter = document.createElement('div');
+                stopCharacter.className = 'character-sprite';
+                stopCharacter.style.left = '50%';
+                stopCharacter.style.transform = 'translateX(-50%)';
+                container.appendChild(stopCharacter);
+                break;
+            case 'camp':
+                const camp = document.createElement('div');
+                camp.className = 'tent-animation';
+                container.appendChild(camp);
+                break;
+            case 'split':
+                const char1 = document.createElement('div');
+                char1.className = 'character-sprite split-left';
+                char1.style.left = '50%';
+                const char2 = document.createElement('div');
+                char2.className = 'character-sprite split-right';
+                char2.style.left = '50%';
+                container.appendChild(char1);
+                container.appendChild(char2);
+                break;
+            case 'take':
+                const takeItem = document.createElement('div');
+                takeItem.style.width = '15px';
+                takeItem.style.height = '15px';
+                takeItem.style.backgroundColor = '#D2B48C';
+                takeItem.style.position = 'absolute';
+                takeItem.style.left = '50%';
+                takeItem.style.top = '50%';
+                takeItem.style.transform = 'translate(-50%, -50%)';
+                takeItem.style.borderRadius = '2px';
+                takeItem.className = 'fade-item';
+                container.appendChild(takeItem);
+                break;
+            case 'run':
+                const runCharacter = document.createElement('div');
+                runCharacter.className = 'character-sprite character-run';
+                runCharacter.style.left = '0';
+                container.appendChild(runCharacter);
+                break;
+            case 'group':
+                const groupChar1 = document.createElement('div');
+                groupChar1.className = 'character-sprite group-pulse';
+                groupChar1.style.left = '40%';
+                groupChar1.style.transform = 'translateX(-50%)';
+                const groupChar2 = document.createElement('div');
+                groupChar2.className = 'character-sprite group-pulse';
+                groupChar2.style.left = '50%';
+                groupChar2.style.transform = 'translateX(-50%)';
+                const groupChar3 = document.createElement('div');
+                groupChar3.className = 'character-sprite group-pulse';
+                groupChar3.style.left = '60%';
+                groupChar3.style.transform = 'translateX(-50%)';
+                container.appendChild(groupChar1);
+                container.appendChild(groupChar2);
+                container.appendChild(groupChar3);
+                break;
+            case 'inspect':
+                const inspectChar = document.createElement('div');
+                inspectChar.className = 'character-sprite';
+                inspectChar.style.left = '50%';
+                inspectChar.style.transform = 'translateX(-50%)';
+                container.appendChild(inspectChar);
+                const magnifier = document.createElement('div');
+                magnifier.style.width = '10px';
+                magnifier.style.height = '10px';
+                magnifier.style.border = '2px solid var(--gb-green-dark)';
+                magnifier.style.borderRadius = '50%';
+                magnifier.style.position = 'absolute';
+                magnifier.style.left = '60%';
+                magnifier.style.top = '50%';
+                magnifier.className = 'magnifier';
+                container.appendChild(magnifier);
+                break;
+            case 'tent':
+                const tent = document.createElement('div');
+                tent.className = 'tent-animation';
+                container.appendChild(tent);
+                break;
+            case 'circle':
+                const circle = document.createElement('div');
+                circle.className = 'circle-animation';
+                container.appendChild(circle);
+                break;
+        }
+    }
+
+    function selectChoice(index) {
+        selectedChoice = index;
+        document.querySelectorAll('#choices-container .choice').forEach((el, i) => {
+            el.classList.toggle('selected', i === index);
+        });
+    }
+
+    function confirmChoice() {
+        const story = storyPhases[storyPhase];
+        playAnimation(story.choices[selectedChoice].animation);
+
+        storyChoices.push(selectedChoice);
+
+        setTimeout(() => {
+            if (storyPhase === storyPhases.length - 1) {
+                showSacrifice();
+            } else {
+                storyPhase++;
+                selectedChoice = 0;
+                showStory();
+            }
+        }, 1800);
+    }
+
+    function showSacrifice() {
+        showScreen('sacrifice');
+        const list = document.getElementById('sacrifice-list');
+        list.innerHTML = '';
+
+        let text = document.querySelector('#screen-sacrifice .story-text').textContent;
+        text = text.replace('{1}', characters[1].name).replace('{2}', characters[2].name);
+        document.querySelector('#screen-sacrifice .story-text').textContent = text;
+
+        characters.filter(c => c.alive && !c.isPlayer).forEach((char, i) => {
+            const div = document.createElement('div');
+            div.className = 'character-item choice';
+            div.textContent = `🌀 ${char.name}`;
+            div.onclick = () => {
+                document.querySelectorAll('#sacrifice-list .choice').forEach(el => el.classList.remove('selected'));
+                div.classList.add('selected');
+                sacrificedPerson = i;
+            };
+            if (i === 0) div.classList.add('selected');
+            list.appendChild(div);
+        });
+
+        if (characters.filter(c => c.alive && !c.isPlayer).length > 0) {
+            sacrificedPerson = 0;
+        }
+    }
+
+    function confirmSacrifice() {
+        if (sacrificedPerson !== null) {
+            const aliveNonPlayer = characters.filter(c => c.alive && !c.isPlayer);
+            if (aliveNonPlayer.length > 0) {
+                aliveNonPlayer[sacrificedPerson].alive = false;
+            }
+            startCombat();
+        }
+    }
+
+    function startCombat() {
+        showScreen('combat');
+        playerHealth = 100;
+        monsterHealth = 150;
+        document.getElementById('player-name').textContent = characters[0].name;
+        updateCombat();
+    }
+
+    function updateCombat() {
+        const playerHealthBar = document.getElementById('player-health');
+        const monsterHealthBar = document.getElementById('monster-health');
+
+        playerHealthBar.style.width = `${playerHealth}%`;
+        monsterHealthBar.style.width = `${(monsterHealth / 150) * 100}%`;
+    }
+
+    function attack() {
+        const damage = 18 + Math.floor(Math.random() * 12);
+        monsterHealth -= damage;
+        updateCombat();
+        checkCombatEnd();
+        if (monsterHealth > 0) {
+            setTimeout(() => monsterAttack(10), 500);
+        }
+    }
+
+    function defend() {
+        const damage = Math.floor(Math.random() * 8);
+        playerHealth -= damage;
+        updateCombat();
+        checkCombatEnd();
+    }
+
+    function special() {
+        if (Math.random() > 0.4) {
+            monsterHealth -= 35;
+        } else {
+            playerHealth -= 25;
+        }
+        updateCombat();
+        checkCombatEnd();
+        if (monsterHealth > 0) {
+            setTimeout(() => monsterAttack(15), 500);
+        }
+    }
+
+    function monsterAttack(baseDmg) {
+        const damage = baseDmg + Math.floor(Math.random() * 10);
+        playerHealth -= damage;
+        updateCombat();
+        checkCombatEnd();
+    }
+
+    function checkCombatEnd() {
+        if (playerHealth <= 0) {
+            showGameOver();
+        } else if (monsterHealth <= 0) {
+            showEnd();
+        }
+    }
+
+    function showEnd() {
+        showScreen('end');
+        const survivors = characters.filter(c => c.alive).map(c => c.name).join(', ');
+        const dead = characters.filter(c => !c.alive).map(c => c.name).join(', ');
+        document.getElementById('end-text').innerHTML = `
+            <b>REVENUS:</b> ${survivors}<br>
+            <b>ABANDONNÉ:</b> ${dead}<br><br>
+            Vous avez survécu à la dimension perdue.
+        `;
+
+        setTimeout(() => {
+            triggerPixelGlitch();
+        }, 2000);
+    }
+
+    function showGameOver() {
+        showScreen('gameover');
+        setTimeout(() => {
+            triggerPixelGlitch();
+        }, 2000);
+    }
+
+    function triggerPixelGlitch() {
+        showScreen('disintegrate');
+        const screen = document.getElementById('screen-disintegrate');
+        const screenWidth = 180;
+        const screenHeight = 180;
+        const pixelSize = 6;
+        const totalPixels = 900;
+
+        for (let i = 0; i < totalPixels; i++) {
+            setTimeout(() => {
+                const pixel = document.createElement('div');
+                pixel.className = 'pixel-glitch';
+                pixel.style.left = Math.random() * (screenWidth - pixelSize) + 'px';
+                pixel.style.top = Math.random() * (screenHeight - pixelSize) + 'px';
+                pixel.style.animationDelay = Math.random() * 0.5 + 's';
+                screen.appendChild(pixel);
+            }, i * 3);
+        }
+    }
+
+    // CONTRÔLES
+    document.getElementById('btn-start').addEventListener('click', () => {
+        if (currentScreen === 'boot') {
+            setTimeout(() => showScreen('menu'), 200);
+        } else if (currentScreen === 'names') {
+            startGame();
+        }
+    });
+
+    document.getElementById('ctrl-a').addEventListener('click', () => {
+        if (currentScreen === 'menu') {
+            showScreen('names');
+            updateNameDisplay();
+        } else if (currentScreen === 'names') {
+            addLetterToName();
+        } else if (currentScreen === 'story') {
+            confirmChoice();
+        } else if (currentScreen === 'sacrifice') {
+            confirmSacrifice();
+        }
+    });
+
+    document.getElementById('ctrl-up').addEventListener('click', () => {
+        if (currentScreen === 'names' && nameInputIndex < 4) {
+            currentLetterIndex[nameInputIndex] = (currentLetterIndex[nameInputIndex] + 1) % alphabet.length;
+            updateNameDisplay();
+        } else if (currentScreen === 'story') {
+            const max = storyPhases[storyPhase].choices.length - 1;
+            selectedChoice = selectedChoice > 0 ? selectedChoice - 1 : max;
+            selectChoice(selectedChoice);
+        } else if (currentScreen === 'sacrifice') {
+            const max = characters.filter(c => c.alive && !c.isPlayer).length - 1;
+            sacrificedPerson = sacrificedPerson > 0 ? sacrificedPerson - 1 : max;
+            document.querySelectorAll('#sacrifice-list .choice').forEach((el, i) => {
+                el.classList.toggle('selected', i === sacrificedPerson);
+            });
+        }
+    });
+
+    document.getElementById('ctrl-down').addEventListener('click', () => {
+        if (currentScreen === 'names' && nameInputIndex < 4) {
+            currentLetterIndex[nameInputIndex] = (currentLetterIndex[nameInputIndex] - 1 + alphabet.length) % alphabet.length;
+            updateNameDisplay();
+        } else if (currentScreen === 'story') {
+            const max = storyPhases[storyPhase].choices.length - 1;
+            selectedChoice = selectedChoice < max ? selectedChoice + 1 : 0;
+            selectChoice(selectedChoice);
+        } else if (currentScreen === 'sacrifice') {
+            const max = characters.filter(c => c.alive && !c.isPlayer).length - 1;
+            sacrificedPerson = sacrificedPerson < max ? sacrificedPerson + 1 : 0;
+            document.querySelectorAll('#sacrifice-list .choice').forEach((el, i) => {
+                el.classList.toggle('selected', i === sacrificedPerson);
+            });
+        }
+    });
+
+    document.getElementById('ctrl-right').addEventListener('click', () => {
+        if (currentScreen === 'names' && nameInputIndex < 3) {
+            nameInputIndex++;
+            updateNameDisplay();
+        }
+    });
+
+    document.getElementById('ctrl-left').addEventListener('click', () => {
+        if (currentScreen === 'names' && nameInputIndex > 0) {
+            nameInputIndex--;
+            updateNameDisplay();
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === 'a') document.getElementById('ctrl-a').click();
+        if (e.key === 's' || e.key === 'S') document.getElementById('btn-start').click();
+        if (e.key === 'ArrowUp') document.getElementById('ctrl-up').click();
+        if (e.key === 'ArrowDown') document.getElementById('ctrl-down').click();
+        if (e.key === 'ArrowLeft') document.getElementById('ctrl-left').click();
+        if (e.key === 'ArrowRight') document.getElementById('ctrl-right').click();
+    });
+</script>
+</body>
+</html>
